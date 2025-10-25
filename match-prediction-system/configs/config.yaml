@@ -1,0 +1,19 @@
+model:
+  type: "RandomForest"
+  parameters:
+    n_estimators: 100
+    max_depth: 10
+    random_state: 42
+
+data:
+  raw_data_path: "data/raw/"
+  processed_data_path: "data/processed/"
+
+training:
+  test_size: 0.2
+  random_state: 42
+  epochs: 50
+
+prediction:
+  match_analysis_threshold: 0.5
+  win_probability_output: true

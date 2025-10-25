@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.venv/
+
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Ignore data folder (processed and raw datasets)
+/data/
+
+# Ignore large archives and backups
+*.zip
+*.tar.gz
+
+# Git LFS handled files (if used)
+.gitattributes
