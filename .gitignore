@@ -22,3 +22,14 @@ env/
 # Git LFS handled files (if used)
 .gitattributes
 match-prediction-system/data/sheets/archive/database.sqlite
+
+# Ignore large processed data and model files
+match-prediction-system/data/processed/*.csv
+match-prediction-system/data/processed/*.log
+match-prediction-system/models/saved_models/*.pkl
+training_output.txt
+match-prediction-system/training_log.txt
+match-prediction-system/training_output.log
+
+# Ignore the entire data folder
+match-prediction-system/data/
