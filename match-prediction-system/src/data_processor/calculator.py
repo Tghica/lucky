@@ -351,6 +351,79 @@ class EloCalculator:
         
         return df
     
+    def calculate_head_to_head(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculate head-to-head win rate for each player against their specific opponent.
+        
+        Args:
+            df: DataFrame with match data (must be chronologically sorted)
+            
+        Returns:
+            DataFrame with added head-to-head columns:
+            - player1_h2h_wins: Number of wins player1 has against player2 before this match
+            - player1_h2h_matches: Total matches between player1 and player2 before this match
+            - player1_h2h_win_rate: Win rate of player1 against player2 (wins/matches)
+            - player2_h2h_wins: Number of wins player2 has against player1 before this match
+            - player2_h2h_matches: Total matches between player2 and player1 before this match
+            - player2_h2h_win_rate: Win rate of player2 against player1 (wins/matches)
+        """
+        # Initialize head-to-head tracking
+        # Structure: {(player_a, player_b): {'wins_a': int, 'wins_b': int, 'total': int}}
+        h2h_records = {}
+        
+        # Initialize result columns as lists for efficiency
+        p1_h2h_wins = []
+        p1_h2h_matches = []
+        p1_h2h_win_rate = []
+        p2_h2h_wins = []
+        p2_h2h_matches = []
+        p2_h2h_win_rate = []
+        
+        for idx, row in df.iterrows():
+            player1 = row['player1']
+            player2 = row['player2']
+            winner = row['winner']
+            
+            # Create a consistent key (alphabetically sorted to ensure same key for both orders)
+            matchup_key = tuple(sorted([player1, player2]))
+            
+            # Initialize head-to-head record if this is first encounter
+            if matchup_key not in h2h_records:
+                h2h_records[matchup_key] = {
+                    matchup_key[0]: 0,  # wins for first player alphabetically
+                    matchup_key[1]: 0   # wins for second player alphabetically
+                }
+            
+            # Get current h2h stats before this match
+            total_matches = h2h_records[matchup_key][matchup_key[0]] + h2h_records[matchup_key][matchup_key[1]]
+            p1_wins = h2h_records[matchup_key][player1]
+            p2_wins = h2h_records[matchup_key][player2]
+            
+            # Calculate win rates (avoid division by zero)
+            p1_win_rate = p1_wins / total_matches if total_matches > 0 else 0.0
+            p2_win_rate = p2_wins / total_matches if total_matches > 0 else 0.0
+            
+            # Store stats for this match
+            p1_h2h_wins.append(p1_wins)
+            p1_h2h_matches.append(total_matches)
+            p1_h2h_win_rate.append(p1_win_rate)
+            p2_h2h_wins.append(p2_wins)
+            p2_h2h_matches.append(total_matches)
+            p2_h2h_win_rate.append(p2_win_rate)
+            
+            # Update head-to-head record after this match
+            h2h_records[matchup_key][winner] += 1
+        
+        # Add columns to dataframe
+        df['player1_h2h_wins'] = p1_h2h_wins
+        df['player1_h2h_matches'] = p1_h2h_matches
+        df['player1_h2h_win_rate'] = p1_h2h_win_rate
+        df['player2_h2h_wins'] = p2_h2h_wins
+        df['player2_h2h_matches'] = p2_h2h_matches
+        df['player2_h2h_win_rate'] = p2_h2h_win_rate
+        
+        return df
+    
     def get_all_ratings(self) -> Dict[str, Dict[str, float]]:
         """Get current ratings for all players (general, surface-specific, and tournament-specific)."""
         return {

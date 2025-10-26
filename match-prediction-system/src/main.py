@@ -26,16 +26,20 @@ def main():
         print("Calculating player form (last 10 matches)...")
         matches_with_elo = elo_calc.calculate_form(matches_with_elo, window=10)
         
-        # Save matches with Elo ratings
+        # Calculate head-to-head statistics
+        print("Calculating head-to-head win rates...")
+        matches_with_elo = elo_calc.calculate_head_to_head(matches_with_elo)
+        
+        # Save matches with Elo ratings, form, and h2h
         matches_with_elo.to_csv("data/processed/match_info.csv", index=False)
-        print(f"\nMatch info with Elo ratings and form saved to data/processed/match_info.csv")
+        print(f"\nMatch info with Elo ratings, form, and H2H saved to data/processed/match_info.csv")
         
         # Show sample with Elo
-        print("\n=== Sample Matches with All Features (Elo, Surface, Tournament, Form) ===")
+        print("\n=== Sample Matches with All Features (Elo, Surface, Tournament, Form, H2H) ===")
         print(matches_with_elo[['date', 'player1', 'player2', 'winner', 'surface', 'tournament_level',
                                  'player1_elo_before', 'player2_elo_before',
-                                 'player1_form', 'player2_form',
-                                 'player1_form_wins', 'player2_form_wins']].tail(10).to_string(index=False))
+                                 'player1_form_wins', 'player2_form_wins',
+                                 'player1_h2h_win_rate', 'player2_h2h_win_rate']].tail(10).to_string(index=False))
         
         # Create player database
         print("\n" + "="*50)

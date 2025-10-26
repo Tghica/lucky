@@ -261,6 +261,39 @@ class FeatureEngineering:
         
         return df
     
+    def create_h2h_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create head-to-head features.
+        
+        H2H is SAFE - computed from matches before each match.
+        
+        Creates:
+        - player1_h2h_win_rate: Player 1's win rate against Player 2
+        - player2_h2h_win_rate: Player 2's win rate against Player 1
+        - h2h_win_rate_diff: Difference in h2h win rates
+        - player1_h2h_wins: Number of wins Player 1 has against Player 2
+        - player2_h2h_wins: Number of wins Player 2 has against Player 1
+        - h2h_matches: Total matches between the two players
+        - h2h_experience: 1 if players have faced each other before, 0 otherwise
+        """
+        # The h2h columns are already in the dataframe from calculator.py
+        # They are: player1_h2h_wins, player1_h2h_matches, player1_h2h_win_rate,
+        #           player2_h2h_wins, player2_h2h_matches, player2_h2h_win_rate
+        
+        # Create derived features
+        df['h2h_win_rate_diff'] = df['player1_h2h_win_rate'] - df['player2_h2h_win_rate']
+        df['h2h_experience'] = (df['player1_h2h_matches'] > 0).astype(int)
+        
+        # Interaction features: h2h advantage combined with Elo
+        # If player has both Elo and h2h advantage, it's a strong signal
+        df['player1_h2h_elo_advantage'] = df['player1_h2h_win_rate'] * (df['player1_elo_before'] / 1500)
+        df['player2_h2h_elo_advantage'] = df['player2_h2h_win_rate'] * (df['player2_elo_before'] / 1500)
+        df['h2h_elo_advantage_diff'] = df['player1_h2h_elo_advantage'] - df['player2_h2h_elo_advantage']
+        
+        logger.info("Created head-to-head features: 6 base + 4 derived = 10 total")
+        
+        return df
+    
     def create_target(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Create target variable: 1 if player1 wins, 0 if player2 wins.
@@ -375,6 +408,7 @@ class FeatureEngineering:
         df = self.create_tournament_features(df)
         df = self.create_elo_based_features(df)
         df = self.create_form_features(df)
+        df = self.create_h2h_features(df)
         df = self.create_target(df)
         
         # Handle missing values
