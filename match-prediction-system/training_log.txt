@@ -1,0 +1,106 @@
+======================================================================
+QUICK TRAINING: Gradient Boosting + XGBoost
+======================================================================
+
+Loading data...
+Train: (53201, 68), Test: (13301, 68)
+
+======================================================================
+GRADIENT BOOSTING BASELINE
+======================================================================
+Training...
+Training time: 59.01s
+
+Evaluating...
+
+Results:
+  Accuracy: 0.6440
+  AUC-ROC:  0.7093
+
+              precision    recall  f1-score   support
+
+ Player2 Win       0.64      0.65      0.65      6651
+ Player1 Win       0.65      0.64      0.64      6650
+
+    accuracy                           0.64     13301
+   macro avg       0.64      0.64      0.64     13301
+weighted avg       0.64      0.64      0.64     13301
+
+Model saved to: models/saved_models/gradientboosting_model.pkl
+
+Top 15 Features (Gradient Boosting):
+                      feature  importance
+            combined_elo_diff    0.627992
+                momentum_diff    0.027606
+              win_probability    0.022569
+                  player1_age    0.022172
+                     age_diff    0.021894
+                  player2_age    0.020217
+   player1_surface_elo_before    0.020082
+player2_tournament_elo_before    0.018940
+             player1_momentum    0.017758
+   player2_surface_elo_before    0.017531
+             player2_momentum    0.015817
+player1_tournament_elo_before    0.015173
+            surface_elo_ratio    0.014063
+           player1_elo_before    0.012439
+                     elo_diff    0.012330
+
+======================================================================
+XGBOOST ADVANCED MODEL
+======================================================================
+Training...
+Training time: 0.82s
+
+Evaluating...
+
+Results:
+  Accuracy: 0.6472
+  AUC-ROC:  0.7087
+
+              precision    recall  f1-score   support
+
+ Player2 Win       0.65      0.64      0.65      6651
+ Player1 Win       0.65      0.65      0.65      6650
+
+    accuracy                           0.65     13301
+   macro avg       0.65      0.65      0.65     13301
+weighted avg       0.65      0.65      0.65     13301
+
+Model saved to: models/saved_models/xgboost_model.pkl
+
+Top 15 Features (XGBoost):
+                   feature  importance
+         combined_elo_diff    0.238830
+                  elo_diff    0.098893
+                 elo_ratio    0.065459
+           win_probability    0.021759
+         surface_elo_ratio    0.016910
+   surface_win_probability    0.016334
+          surface_elo_diff    0.015170
+     tournament_grand_slam    0.013348
+         player1_form_wins    0.012736
+             momentum_diff    0.011634
+          player2_momentum    0.011254
+           player2_match_1    0.010398
+player1_surface_elo_before    0.010239
+       player1_recent_form    0.010209
+          player1_momentum    0.010100
+
+======================================================================
+MODEL COMPARISON
+======================================================================
+
+Gradient Boosting:
+  Accuracy: 0.6440
+  AUC-ROC:  0.7093
+
+XGBoost:
+  Accuracy: 0.6472
+  AUC-ROC:  0.7087
+
+Improvement: +0.32% accuracy
+
+======================================================================
+✓ TRAINING COMPLETE!
+======================================================================

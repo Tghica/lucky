@@ -21,3 +21,4 @@ env/
 
 # Git LFS handled files (if used)
 .gitattributes
+match-prediction-system/data/sheets/archive/database.sqlite

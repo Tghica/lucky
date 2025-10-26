@@ -283,26 +283,27 @@ class EloCalculator:
     def calculate_form(self, df: pd.DataFrame, window: int = 10) -> pd.DataFrame:
         """
         Calculate player form based on recent match performance.
-        Form is calculated as win percentage over the last N matches.
+        Form is tracked as individual match outcomes for the last N matches.
         
         Args:
             df: DataFrame with match data (must be chronologically sorted)
-            window: Number of recent matches to consider for form calculation
+            window: Number of recent matches to consider for form calculation (default: 10)
             
         Returns:
-            DataFrame with added form columns
+            DataFrame with added form columns:
+            - player1_match_1 through player1_match_10: 1=Won, 0=Lost, NaN=No match
+            - player2_match_1 through player2_match_10: 1=Won, 0=Lost, NaN=No match
+            
+        Note: match_1 is the most recent match, match_10 is the oldest
         """
         # Initialize form columns as lists (faster than df.at[])
-        player1_form = []
-        player2_form = []
-        player1_form_wins = []
-        player2_form_wins = []
-        player1_form_matches = []
-        player2_form_matches = []
+        # Create dictionary to store match outcome lists
+        player1_matches = {f'player1_match_{i}': [] for i in range(1, window + 1)}
+        player2_matches = {f'player2_match_{i}': [] for i in range(1, window + 1)}
         
         # Track match history for each player using deque for efficiency
         from collections import deque
-        player_match_history = {}  # {player: deque of is_win booleans}
+        player_match_history = {}  # {player: deque of is_win booleans (1=won, 0=lost)}
         
         for idx, row in df.iterrows():
             player1 = row['player1']
@@ -316,44 +317,37 @@ class EloCalculator:
                 player_match_history[player2] = deque(maxlen=window)
             
             # Get form based on history before this match
-            p1_history = player_match_history[player1]
-            p2_history = player_match_history[player2]
+            # Convert deque to list for indexing (index 0 = most recent, -1 = oldest)
+            p1_history = list(player_match_history[player1])
+            p2_history = list(player_match_history[player2])
             
-            # Player 1 form
-            if len(p1_history) > 0:
-                p1_wins = sum(p1_history)
-                p1_matches = len(p1_history)
-                player1_form.append((p1_wins / p1_matches) * 100)
-                player1_form_wins.append(p1_wins)
-                player1_form_matches.append(p1_matches)
-            else:
-                player1_form.append(0.0)
-                player1_form_wins.append(0)
-                player1_form_matches.append(0)
+            # Player 1 form: store individual match outcomes
+            for i in range(1, window + 1):
+                if i <= len(p1_history):
+                    # Convert True/False to 1/0, access from most recent (index i-1)
+                    player1_matches[f'player1_match_{i}'].append(int(p1_history[i - 1]))
+                else:
+                    # No match data available for this position
+                    player1_matches[f'player1_match_{i}'].append(None)
             
-            # Player 2 form
-            if len(p2_history) > 0:
-                p2_wins = sum(p2_history)
-                p2_matches = len(p2_history)
-                player2_form.append((p2_wins / p2_matches) * 100)
-                player2_form_wins.append(p2_wins)
-                player2_form_matches.append(p2_matches)
-            else:
-                player2_form.append(0.0)
-                player2_form_wins.append(0)
-                player2_form_matches.append(0)
+            # Player 2 form: store individual match outcomes
+            for i in range(1, window + 1):
+                if i <= len(p2_history):
+                    # Convert True/False to 1/0, access from most recent (index i-1)
+                    player2_matches[f'player2_match_{i}'].append(int(p2_history[i - 1]))
+                else:
+                    # No match data available for this position
+                    player2_matches[f'player2_match_{i}'].append(None)
             
-            # Update match history after this match (deque auto-limits to window size)
-            player_match_history[player1].append(winner == player1)
-            player_match_history[player2].append(winner == player2)
+            # Update match history after this match
+            # Append to left to keep most recent first (index 0)
+            player_match_history[player1].appendleft(winner == player1)
+            player_match_history[player2].appendleft(winner == player2)
         
-        # Add columns to dataframe (much faster than df.at[])
-        df['player1_form'] = player1_form
-        df['player2_form'] = player2_form
-        df['player1_form_wins'] = player1_form_wins
-        df['player2_form_wins'] = player2_form_wins
-        df['player1_form_matches'] = player1_form_matches
-        df['player2_form_matches'] = player2_form_matches
+        # Add all match outcome columns to dataframe
+        for i in range(1, window + 1):
+            df[f'player1_match_{i}'] = player1_matches[f'player1_match_{i}']
+            df[f'player2_match_{i}'] = player2_matches[f'player2_match_{i}']
         
         return df
     
