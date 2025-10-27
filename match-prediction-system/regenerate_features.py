@@ -27,21 +27,27 @@ def main():
     use_existing = True  # Set to False to reload from original sheets
     
     if use_existing and os.path.exists('data/processed/match_info.csv'):
-        logger.info("\n1. Loading existing match_info.csv (without form columns)...")
+        logger.info("\n1. Loading existing match_info.csv...")
         df = pd.read_csv('data/processed/match_info.csv')
         
-        # Remove old form columns if they exist
-        old_form_cols = ['player1_form', 'player2_form', 'player1_form_wins', 
-                        'player2_form_wins', 'player1_form_matches', 'player2_form_matches']
-        df = df.drop(columns=[col for col in old_form_cols if col in df.columns], errors='ignore')
+        # Remove old form and new feature columns if they exist
+        old_cols = ['player1_form', 'player2_form', 'player1_form_wins', 
+                   'player2_form_wins', 'player1_form_matches', 'player2_form_matches',
+                   'player1_days_since_last', 'player2_days_since_last', 'rest_advantage',
+                   'player1_fatigued', 'player2_fatigued', 'both_rested',
+                   'player1_matches_in_tournament', 'player2_matches_in_tournament',
+                   'tournament_experience_diff', 'player1_deep_run', 'player2_deep_run']
+        # Also remove individual match columns
+        for i in range(1, 11):
+            old_cols.extend([f'player1_match_{i}', f'player2_match_{i}'])
+        
+        df = df.drop(columns=[col for col in old_cols if col in df.columns], errors='ignore')
         
         logger.info(f"Loaded {len(df):,} matches")
     else:
-        logger.info("\n1. Loading and merging raw data sheets...")
-        from src.data_processor.data_loader import DataLoader
-        loader = DataLoader()
-        df = loader.merge_all_sheets(output_path=None)  # Don't save yet
-        logger.info(f"Merged {len(df):,} matches from all sheets")
+        logger.info("\n1. ERROR: match_info.csv not found!")
+        logger.info("Please run src/main.py first to generate the base data.")
+        return
     
     # Ensure chronological order
     df['date'] = pd.to_datetime(df['date'])
@@ -52,8 +58,16 @@ def main():
     elo_calc = EloCalculator()
     df = elo_calc.calculate_form(df, window=10)  # Now creates 20 individual match columns
     
+    # Calculate fatigue features
+    logger.info("\n3. Calculating fatigue features (days since last match)...")
+    df = elo_calc.calculate_fatigue(df)
+    
+    # Calculate tournament progression features
+    logger.info("\n4. Calculating tournament progression features...")
+    df = elo_calc.calculate_tournament_progression(df)
+    
     # Save updated match_info.csv
-    logger.info("\n3. Saving updated match_info.csv...")
+    logger.info("\n5. Saving updated match_info.csv...")
     df.to_csv('data/processed/match_info.csv', index=False)
     logger.info(f"Saved {len(df):,} matches to data/processed/match_info.csv")
     
@@ -68,7 +82,7 @@ def main():
     print(df[sample_cols].head(20).to_string())
     
     # Split data into train/test
-    logger.info("\n4. Splitting data into train/test sets...")
+    logger.info("\n6. Splitting data into train/test sets...")
     splitter = DataSplitter('data/processed/match_info.csv')  # Load from file we just saved
     train_df, test_df = splitter.temporal_split(
         test_size=0.2,
@@ -77,14 +91,14 @@ def main():
     logger.info(f"Train: {len(train_df):,} matches, Test: {len(test_df):,} matches")
     
     # Feature engineering
-    logger.info("\n5. Generating features for TRAIN set...")
+    logger.info("\n7. Generating features for TRAIN set...")
     fe_train = FeatureEngineering('data/processed/train_matches.csv')  # Load from saved file
     X_train, y_train, feature_names = fe_train.prepare_features(
         scale=True,
         return_feature_names=True
     )
     
-    logger.info("\n6. Generating features for TEST set...")
+    logger.info("\n8. Generating features for TEST set...")
     fe_test = FeatureEngineering('data/processed/test_matches.csv')  # Load from saved file
     X_test, y_test = fe_test.prepare_features(
         scale=True,
@@ -92,7 +106,7 @@ def main():
     )
     
     # Save features
-    logger.info("\n7. Saving feature matrices...")
+    logger.info("\n9. Saving feature matrices...")
     X_train.to_csv('data/processed/train_features.csv', index=False)
     X_test.to_csv('data/processed/test_features.csv', index=False)
     

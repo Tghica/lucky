@@ -294,6 +294,99 @@ class FeatureEngineering:
         
         return df
     
+    def create_fatigue_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create fatigue-based features (already calculated by calculator.py).
+        
+        The calculator already provides:
+        - player1_days_since_last, player2_days_since_last
+        - rest_advantage
+        - player1_fatigued, player2_fatigued
+        - both_rested
+        
+        This method adds derived features for better model learning.
+        """
+        # Fatigue interaction with Elo (fatigue hurts high-ranked players more)
+        df['player1_fatigue_impact'] = df['player1_fatigued'] * (df['player1_elo_before'] / 1500)
+        df['player2_fatigue_impact'] = df['player2_fatigued'] * (df['player2_elo_before'] / 1500)
+        df['fatigue_impact_diff'] = df['player1_fatigue_impact'] - df['player2_fatigue_impact']
+        
+        # Rest quality (log scale for diminishing returns: 2->3 days matters more than 10->11)
+        df['player1_rest_quality'] = np.log1p(df['player1_days_since_last'])
+        df['player2_rest_quality'] = np.log1p(df['player2_days_since_last'])
+        df['rest_quality_diff'] = df['player1_rest_quality'] - df['player2_rest_quality']
+        
+        logger.info("Created fatigue features: 6 base + 6 derived = 12 total")
+        
+        return df
+    
+    def create_tournament_progression_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create tournament progression features (already calculated by calculator.py).
+        
+        The calculator already provides:
+        - player1_matches_in_tournament, player2_matches_in_tournament
+        - tournament_experience_diff
+        - player1_deep_run, player2_deep_run
+        
+        This method adds derived features.
+        """
+        # Tournament fatigue vs momentum (deep run = tired OR hot streak)
+        # Interaction with form: deep run + good form = momentum, deep run + bad form = fatigue
+        df['player1_tournament_momentum'] = df['player1_matches_in_tournament'] * df['player1_form_wins']
+        df['player2_tournament_momentum'] = df['player2_matches_in_tournament'] * df['player2_form_wins']
+        df['tournament_momentum_diff'] = df['player1_tournament_momentum'] - df['player2_tournament_momentum']
+        
+        # Experience in tournament rounds (squared to emphasize deep runs: 3 matches >> 1 match)
+        df['player1_tournament_rounds'] = df['player1_matches_in_tournament'] ** 2
+        df['player2_tournament_rounds'] = df['player2_matches_in_tournament'] ** 2
+        df['tournament_rounds_diff'] = df['player1_tournament_rounds'] - df['player2_tournament_rounds']
+        
+        logger.info("Created tournament progression features: 5 base + 6 derived = 11 total")
+        
+        return df
+    
+    def create_surface_advantage_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create surface specialization advantage features.
+        
+        Measures how much better/worse each player is on the current surface
+        compared to their overall ability. This is different from just comparing
+        surface Elos directly.
+        
+        Example: Nadal clay Elo 2200, general 2000 = +200 advantage
+                 Federer clay Elo 1950, general 2000 = -50 disadvantage
+        """
+        # Surface advantage (how much better on this surface vs overall)
+        df['player1_surface_advantage'] = (
+            df['player1_surface_elo_before'] - df['player1_elo_before']
+        )
+        df['player2_surface_advantage'] = (
+            df['player2_surface_elo_before'] - df['player2_elo_before']
+        )
+        df['surface_advantage_diff'] = (
+            df['player1_surface_advantage'] - df['player2_surface_advantage']
+        )
+        
+        # Surface specialist flag (significantly better on this surface)
+        df['player1_surface_specialist'] = (df['player1_surface_advantage'] > 50).astype(int)
+        df['player2_surface_specialist'] = (df['player2_surface_advantage'] > 50).astype(int)
+        
+        # Surface advantage percentage (relative to general Elo)
+        df['player1_surface_advantage_pct'] = (
+            df['player1_surface_advantage'] / (df['player1_elo_before'] + 1e-6)
+        )
+        df['player2_surface_advantage_pct'] = (
+            df['player2_surface_advantage'] / (df['player2_elo_before'] + 1e-6)
+        )
+        df['surface_advantage_pct_diff'] = (
+            df['player1_surface_advantage_pct'] - df['player2_surface_advantage_pct']
+        )
+        
+        logger.info("Created surface advantage features: 9 total")
+        
+        return df
+    
     def create_target(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Create target variable: 1 if player1 wins, 0 if player2 wins.
@@ -400,7 +493,7 @@ class FeatureEngineering:
         df = self.load_data()
         df = self.merge_player_attributes()
         
-        # Create all features
+                # Create all features
         df = self.create_age_features(df)
         df = self.create_height_features(df)
         df = self.create_hand_features(df)
@@ -408,6 +501,9 @@ class FeatureEngineering:
         df = self.create_tournament_features(df)
         df = self.create_elo_based_features(df)
         df = self.create_form_features(df)
+        df = self.create_fatigue_features(df)
+        df = self.create_tournament_progression_features(df)
+        df = self.create_surface_advantage_features(df)
         df = self.create_h2h_features(df)
         df = self.create_target(df)
         

@@ -424,6 +424,167 @@ class EloCalculator:
         
         return df
     
+    def calculate_fatigue(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculate fatigue features: days since last match for each player.
+        
+        Players who played recently may be fatigued (disadvantage) or in good rhythm (advantage).
+        Players with long breaks may be rusty or well-rested.
+        
+        Args:
+            df: DataFrame with match data (must be chronologically sorted and have 'date' column)
+            
+        Returns:
+            DataFrame with added fatigue columns:
+            - player1_days_since_last: Days between this match and player1's previous match
+            - player2_days_since_last: Days between this match and player2's previous match
+            - rest_advantage: Difference in rest days (positive = player1 more rested)
+            - player1_fatigued: 1 if player1 played within last 2 days, 0 otherwise
+            - player2_fatigued: 1 if player2 played within last 2 days, 0 otherwise
+            - both_rested: 1 if both players had 3+ days rest, 0 otherwise
+        """
+        # Ensure date is datetime
+        df['date'] = pd.to_datetime(df['date'])
+        
+        # Track last match date for each player
+        player_last_match = {}  # {player: last_match_date}
+        
+        # Initialize result columns as lists
+        p1_days_since_last = []
+        p2_days_since_last = []
+        rest_advantage = []
+        p1_fatigued = []
+        p2_fatigued = []
+        both_rested = []
+        
+        for idx, row in df.iterrows():
+            player1 = row['player1']
+            player2 = row['player2']
+            match_date = row['date']
+            
+            # Calculate days since last match for player1
+            if player1 in player_last_match:
+                days_since_p1 = (match_date - player_last_match[player1]).days
+            else:
+                days_since_p1 = None  # First match for this player
+            
+            # Calculate days since last match for player2
+            if player2 in player_last_match:
+                days_since_p2 = (match_date - player_last_match[player2]).days
+            else:
+                days_since_p2 = None  # First match for this player
+            
+            # Calculate rest advantage (None if either player has no history)
+            if days_since_p1 is not None and days_since_p2 is not None:
+                rest_adv = days_since_p1 - days_since_p2
+            else:
+                rest_adv = 0  # Neutral if no history
+            
+            # Fatigue flags (played within 2 days = fatigued)
+            p1_is_fatigued = 1 if (days_since_p1 is not None and days_since_p1 < 2) else 0
+            p2_is_fatigued = 1 if (days_since_p2 is not None and days_since_p2 < 2) else 0
+            
+            # Both well-rested flag (3+ days for both)
+            both_well_rested = 1 if (
+                days_since_p1 is not None and days_since_p1 >= 3 and
+                days_since_p2 is not None and days_since_p2 >= 3
+            ) else 0
+            
+            # Store results
+            p1_days_since_last.append(days_since_p1 if days_since_p1 is not None else 7)  # Default to 7 days
+            p2_days_since_last.append(days_since_p2 if days_since_p2 is not None else 7)
+            rest_advantage.append(rest_adv)
+            p1_fatigued.append(p1_is_fatigued)
+            p2_fatigued.append(p2_is_fatigued)
+            both_rested.append(both_well_rested)
+            
+            # Update last match date for both players
+            player_last_match[player1] = match_date
+            player_last_match[player2] = match_date
+        
+        # Add columns to dataframe
+        df['player1_days_since_last'] = p1_days_since_last
+        df['player2_days_since_last'] = p2_days_since_last
+        df['rest_advantage'] = rest_advantage
+        df['player1_fatigued'] = p1_fatigued
+        df['player2_fatigued'] = p2_fatigued
+        df['both_rested'] = both_rested
+        
+        logger.info("Calculated fatigue features: days since last match, rest advantage, fatigue flags")
+        
+        return df
+    
+    def calculate_tournament_progression(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculate tournament progression features: matches played in current tournament.
+        
+        Players deep in a tournament may be fatigued OR in excellent form.
+        This feature captures both endurance and momentum within a tournament.
+        
+        Args:
+            df: DataFrame with match data (must be chronologically sorted with 'tournament' column)
+            
+        Returns:
+            DataFrame with added tournament progression columns:
+            - player1_matches_in_tournament: Number of matches player1 has played in this tournament
+            - player2_matches_in_tournament: Number of matches player2 has played in this tournament
+            - tournament_experience_diff: Difference (player1 - player2) in tournament matches
+            - player1_deep_run: 1 if player1 has played 3+ matches in tournament, 0 otherwise
+            - player2_deep_run: 1 if player2 has played 3+ matches in tournament, 0 otherwise
+        """
+        # Track matches played by each player in each tournament
+        # Structure: {(player, tournament): match_count}
+        tournament_matches = {}
+        
+        # Initialize result columns as lists
+        p1_matches_in_tournament = []
+        p2_matches_in_tournament = []
+        tournament_exp_diff = []
+        p1_deep_run = []
+        p2_deep_run = []
+        
+        for idx, row in df.iterrows():
+            player1 = row['player1']
+            player2 = row['player2']
+            tournament = row.get('tournament', 'Unknown')  # Get tournament name
+            
+            # Create keys for this tournament
+            p1_key = (player1, tournament)
+            p2_key = (player2, tournament)
+            
+            # Get current match count for each player in this tournament (before this match)
+            p1_count = tournament_matches.get(p1_key, 0)
+            p2_count = tournament_matches.get(p2_key, 0)
+            
+            # Calculate experience difference
+            exp_diff = p1_count - p2_count
+            
+            # Deep run flags (3+ matches indicates deep tournament run)
+            p1_is_deep = 1 if p1_count >= 3 else 0
+            p2_is_deep = 1 if p2_count >= 3 else 0
+            
+            # Store results
+            p1_matches_in_tournament.append(p1_count)
+            p2_matches_in_tournament.append(p2_count)
+            tournament_exp_diff.append(exp_diff)
+            p1_deep_run.append(p1_is_deep)
+            p2_deep_run.append(p2_is_deep)
+            
+            # Update match counts after this match
+            tournament_matches[p1_key] = p1_count + 1
+            tournament_matches[p2_key] = p2_count + 1
+        
+        # Add columns to dataframe
+        df['player1_matches_in_tournament'] = p1_matches_in_tournament
+        df['player2_matches_in_tournament'] = p2_matches_in_tournament
+        df['tournament_experience_diff'] = tournament_exp_diff
+        df['player1_deep_run'] = p1_deep_run
+        df['player2_deep_run'] = p2_deep_run
+        
+        logger.info("Calculated tournament progression features: matches in tournament, deep run flags")
+        
+        return df
+    
     def get_all_ratings(self) -> Dict[str, Dict[str, float]]:
         """Get current ratings for all players (general, surface-specific, and tournament-specific)."""
         return {

@@ -1,0 +1,24 @@
+{
+  "timestamp": "20251027_010413",
+  "baseline_accuracy": 0.6474,
+  "tuned_accuracy": 0.6486730321028494,
+  "accuracy_improvement": 0.0012730321028494584,
+  "baseline_auc": 0.709,
+  "tuned_auc": 0.7108960606296978,
+  "auc_improvement": 0.0018960606296978266,
+  "best_params": {
+    "subsample": 0.7,
+    "reg_lambda": 1.5,
+    "reg_alpha": 0.01,
+    "n_estimators": 700,
+    "min_child_weight": 5,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "gamma": 0.2,
+    "colsample_bytree": 0.8
+  },
+  "best_cv_score": 0.7592502389946889,
+  "search_time_minutes": 4.337302867571513,
+  "train_accuracy": 0.6999680457134264,
+  "train_auc": 0.7753630460215046
+}
