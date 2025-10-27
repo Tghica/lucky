@@ -387,6 +387,46 @@ class FeatureEngineering:
         
         return df
     
+    def create_win_streak_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create derived features from win streak columns.
+        
+        Analyzes momentum and recent form based on win/loss streaks.
+        
+        Returns 8 features:
+        - player1_on_winning_streak: 1 if currently on win streak (>=2 wins)
+        - player2_on_winning_streak: 1 if currently on win streak (>=2 wins)
+        - player1_on_losing_streak: 1 if currently on loss streak (>=2 losses)
+        - player2_on_losing_streak: 1 if currently on loss streak (>=2 losses)
+        - momentum_advantage: Difference in wins from last 5 matches
+        - both_hot: 1 if both players won 4+ of last 5
+        - both_cold: 1 if both players won 1 or fewer of last 5
+        - hot_vs_cold: 1 if one player hot (4+/5) and other cold (<=1/5)
+        """
+        # Binary flags for streaks
+        df['player1_on_winning_streak'] = (df['player1_win_streak'] >= 2).astype(int)
+        df['player2_on_winning_streak'] = (df['player2_win_streak'] >= 2).astype(int)
+        df['player1_on_losing_streak'] = (df['player1_win_streak'] <= -2).astype(int)
+        df['player2_on_losing_streak'] = (df['player2_win_streak'] <= -2).astype(int)
+        
+        # Momentum from last 5 matches
+        df['momentum_advantage'] = df['player1_wins_last_5'] - df['player2_wins_last_5']
+        
+        # Both players in good/bad form
+        df['both_hot'] = ((df['player1_wins_last_5'] >= 4) & (df['player2_wins_last_5'] >= 4)).astype(int)
+        df['both_cold'] = ((df['player1_wins_last_5'] <= 1) & (df['player2_wins_last_5'] <= 1)).astype(int)
+        
+        # Hot vs Cold matchup
+        p1_hot = df['player1_wins_last_5'] >= 4
+        p2_cold = df['player2_wins_last_5'] <= 1
+        p2_hot = df['player2_wins_last_5'] >= 4
+        p1_cold = df['player1_wins_last_5'] <= 1
+        df['hot_vs_cold'] = ((p1_hot & p2_cold) | (p2_hot & p1_cold)).astype(int)
+        
+        logger.info("Created win streak features: 8 derived features")
+        
+        return df
+    
     def create_target(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Create target variable: 1 if player1 wins, 0 if player2 wins.
@@ -504,6 +544,7 @@ class FeatureEngineering:
         df = self.create_fatigue_features(df)
         df = self.create_tournament_progression_features(df)
         df = self.create_surface_advantage_features(df)
+        df = self.create_win_streak_features(df)
         df = self.create_h2h_features(df)
         df = self.create_target(df)
         

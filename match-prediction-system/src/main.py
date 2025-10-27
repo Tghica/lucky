@@ -34,21 +34,26 @@ def main():
         print("Calculating tournament progression (matches in current tournament)...")
         matches_with_elo = elo_calc.calculate_tournament_progression(matches_with_elo)
         
+        # Calculate win streak features
+        print("Calculating win streak features (momentum, recent form)...")
+        matches_with_elo = elo_calc.calculate_win_streaks(matches_with_elo)
+        
         # Calculate head-to-head statistics
         print("Calculating head-to-head win rates...")
         matches_with_elo = elo_calc.calculate_head_to_head(matches_with_elo)
         
         # Save matches with Elo ratings, form, and h2h
         matches_with_elo.to_csv("data/processed/match_info.csv", index=False)
-        print(f"\nMatch info with Elo ratings, form, fatigue, tournament progression, and H2H saved to data/processed/match_info.csv")
+        print(f"\nMatch info with Elo ratings, form, fatigue, tournament progression, win streaks, and H2H saved to data/processed/match_info.csv")
         
         # Show sample with Elo
-        print("\n=== Sample Matches with All Features (Elo, Surface, Tournament, Form, Fatigue, Tournament Progression, H2H) ===")
+        print("\n=== Sample Matches with All Features (Elo, Surface, Tournament, Form, Fatigue, Tournament Progression, Win Streaks, H2H) ===")
         print(matches_with_elo[['date', 'player1', 'player2', 'winner', 'surface', 'tournament_level',
                                  'player1_elo_before', 'player2_elo_before',
                                  'player1_form_wins', 'player2_form_wins',
                                  'player1_days_since_last', 'player2_days_since_last',
                                  'player1_matches_in_tournament', 'player2_matches_in_tournament',
+                                 'player1_win_streak', 'player2_win_streak',
                                  'player1_h2h_win_rate', 'player2_h2h_win_rate']].tail(10).to_string(index=False))
         
         # Create player database

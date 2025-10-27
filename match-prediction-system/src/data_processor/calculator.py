@@ -585,6 +585,154 @@ class EloCalculator:
         
         return df
     
+    def calculate_win_streaks(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculate win/loss streak features for each player.
+        
+        Momentum is crucial in tennis - players on winning streaks often have psychological advantage.
+        This tracks current winning/losing streaks overall and on specific surfaces.
+        
+        Args:
+            df: DataFrame with match data (must be chronologically sorted)
+            
+        Returns:
+            DataFrame with added win streak columns:
+            - player1_win_streak: Current consecutive wins (negative for losses)
+            - player2_win_streak: Current consecutive wins (negative for losses)
+            - player1_surface_win_streak: Win streak on current surface
+            - player2_surface_win_streak: Win streak on current surface
+            - player1_wins_last_5: Wins in last 5 matches
+            - player2_wins_last_5: Wins in last 5 matches
+            - streak_advantage: Difference in overall win streaks
+            - surface_streak_advantage: Difference in surface win streaks
+        """
+        # Track win/loss streaks for each player
+        player_streak = {}  # {player: current_streak} (positive=wins, negative=losses)
+        player_surface_streak = {}  # {(player, surface): current_streak}
+        player_recent_results = {}  # {player: [list of recent results]}
+        
+        # Initialize result columns
+        p1_win_streak = []
+        p2_win_streak = []
+        p1_surface_win_streak = []
+        p2_surface_win_streak = []
+        p1_wins_last_5 = []
+        p2_wins_last_5 = []
+        streak_advantage = []
+        surface_streak_advantage = []
+        
+        for idx, row in df.iterrows():
+            player1 = row['player1']
+            player2 = row['player2']
+            winner = row['winner']
+            surface = row.get('surface', 'Unknown')
+            
+            # Initialize player trackers if new
+            if player1 not in player_streak:
+                player_streak[player1] = 0
+                player_recent_results[player1] = []
+            if player2 not in player_streak:
+                player_streak[player2] = 0
+                player_recent_results[player2] = []
+            
+            p1_surface_key = (player1, surface)
+            p2_surface_key = (player2, surface)
+            if p1_surface_key not in player_surface_streak:
+                player_surface_streak[p1_surface_key] = 0
+            if p2_surface_key not in player_surface_streak:
+                player_surface_streak[p2_surface_key] = 0
+            
+            # Get current streaks BEFORE this match
+            p1_streak = player_streak[player1]
+            p2_streak = player_streak[player2]
+            p1_surf_streak = player_surface_streak[p1_surface_key]
+            p2_surf_streak = player_surface_streak[p2_surface_key]
+            
+            # Get wins in last 5 matches
+            p1_recent = player_recent_results[player1]
+            p2_recent = player_recent_results[player2]
+            p1_last_5_wins = sum(1 for result in p1_recent[-5:] if result == 1)
+            p2_last_5_wins = sum(1 for result in p2_recent[-5:] if result == 1)
+            
+            # Store stats for this match
+            p1_win_streak.append(p1_streak)
+            p2_win_streak.append(p2_streak)
+            p1_surface_win_streak.append(p1_surf_streak)
+            p2_surface_win_streak.append(p2_surf_streak)
+            p1_wins_last_5.append(p1_last_5_wins)
+            p2_wins_last_5.append(p2_last_5_wins)
+            streak_advantage.append(p1_streak - p2_streak)
+            surface_streak_advantage.append(p1_surf_streak - p2_surf_streak)
+            
+            # Update streaks AFTER this match
+            if winner == player1:
+                # Player1 won
+                if p1_streak >= 0:
+                    player_streak[player1] = p1_streak + 1  # Continue win streak
+                else:
+                    player_streak[player1] = 1  # Start new win streak
+                
+                if p1_surf_streak >= 0:
+                    player_surface_streak[p1_surface_key] = p1_surf_streak + 1
+                else:
+                    player_surface_streak[p1_surface_key] = 1
+                
+                player_recent_results[player1].append(1)  # Win
+                
+                # Player2 lost
+                if p2_streak <= 0:
+                    player_streak[player2] = p2_streak - 1  # Continue loss streak
+                else:
+                    player_streak[player2] = -1  # Start new loss streak
+                
+                if p2_surf_streak <= 0:
+                    player_surface_streak[p2_surface_key] = p2_surf_streak - 1
+                else:
+                    player_surface_streak[p2_surface_key] = -1
+                
+                player_recent_results[player2].append(0)  # Loss
+                
+            else:  # winner == player2
+                # Player2 won
+                if p2_streak >= 0:
+                    player_streak[player2] = p2_streak + 1
+                else:
+                    player_streak[player2] = 1
+                
+                if p2_surf_streak >= 0:
+                    player_surface_streak[p2_surface_key] = p2_surf_streak + 1
+                else:
+                    player_surface_streak[p2_surface_key] = 1
+                
+                player_recent_results[player2].append(1)  # Win
+                
+                # Player1 lost
+                if p1_streak <= 0:
+                    player_streak[player1] = p1_streak - 1
+                else:
+                    player_streak[player1] = -1
+                
+                if p1_surf_streak <= 0:
+                    player_surface_streak[p1_surface_key] = p1_surf_streak - 1
+                else:
+                    player_surface_streak[p1_surface_key] = -1
+                
+                player_recent_results[player1].append(0)  # Loss
+        
+        # Add columns to dataframe
+        df['player1_win_streak'] = p1_win_streak
+        df['player2_win_streak'] = p2_win_streak
+        df['player1_surface_win_streak'] = p1_surface_win_streak
+        df['player2_surface_win_streak'] = p2_surface_win_streak
+        df['player1_wins_last_5'] = p1_wins_last_5
+        df['player2_wins_last_5'] = p2_wins_last_5
+        df['streak_advantage'] = streak_advantage
+        df['surface_streak_advantage'] = surface_streak_advantage
+        
+        logger.info("Calculated win streak features: streaks, surface streaks, recent form")
+        
+        return df
+    
     def get_all_ratings(self) -> Dict[str, Dict[str, float]]:
         """Get current ratings for all players (general, surface-specific, and tournament-specific)."""
         return {
