@@ -13,6 +13,8 @@ env/
 .vscode/
 
 # Ignore data folder (processed and raw datasets)
+!/data/graphs/
+!/data/graphs/*.png
 /data/
 
 # Ignore large archives and backups
@@ -32,4 +34,6 @@ match-prediction-system/training_log.txt
 match-prediction-system/training_output.log
 
 # Ignore the entire data folder
+!match-prediction-system/data/graphs/
+!match-prediction-system/data/graphs/*.png
 match-prediction-system/data/
