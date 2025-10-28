@@ -1,0 +1,59 @@
+# Environment variables (API keys, secrets)
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (exclude large datasets)
+data/sheets/*.csv
+data/sheets/*.xlsx
+data/processed/*.csv
+
+# Models (exclude saved models)
+models/saved_models/*.pkl
+models/saved_models/*.joblib
+
+# Logs
+*.log
+training_output.txt
+hyperparameter_tuning_output.txt

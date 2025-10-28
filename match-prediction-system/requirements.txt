@@ -6,3 +6,7 @@ seaborn
 PyYAML
 jupyter
 joblib
+xgboost
+lightgbm
+requests
+beautifulsoup4

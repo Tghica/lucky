@@ -14,6 +14,7 @@ print("="*70)
 # Load data
 print("\nLoading data...")
 X_train = pd.read_csv('data/processed/train_features.csv')
+
 y_train = pd.read_csv('data/processed/train_target.csv').values.ravel()
 X_test = pd.read_csv('data/processed/test_features.csv')
 y_test = pd.read_csv('data/processed/test_target.csv').values.ravel()
@@ -32,7 +33,7 @@ print("GRADIENT BOOSTING BASELINE")
 print("="*70)
 
 start_time = time.time()
-gb_model = GradientBoostingClassifier(
+Gb_model = GradientBoostingClassifier(
     n_estimators=100,
     learning_rate=0.1,
     max_depth=5,
@@ -44,14 +45,14 @@ gb_model = GradientBoostingClassifier(
 )
 
 print("Training...")
-gb_model.fit(X_train, y_train)
+Gb_model.fit(X_train, y_train)
 train_time = time.time() - start_time
 print(f"Training time: {train_time:.2f}s")
 
 # Evaluate
 print("\nEvaluating...")
-y_pred_gb = gb_model.predict(X_test)
-y_pred_proba_gb = gb_model.predict_proba(X_test)[:, 1]
+y_pred_gb = Gb_model.predict(X_test)
+y_pred_proba_gb = Gb_model.predict_proba(X_test)[:, 1]
 
 gb_accuracy = accuracy_score(y_test, y_pred_gb)
 gb_auc = roc_auc_score(y_test, y_pred_proba_gb)
@@ -62,13 +63,13 @@ print(f"  AUC-ROC:  {gb_auc:.4f}")
 print(f"\n{classification_report(y_test, y_pred_gb, target_names=['Player2 Win', 'Player1 Win'])}")
 
 # Save
-joblib.dump(gb_model, 'models/saved_models/gradientboosting_model.pkl')
+joblib.dump(Gb_model, 'models/saved_models/gradientboosting_model.pkl')
 print("Model saved to: models/saved_models/gradientboosting_model.pkl")
 
 # Feature importance
 feature_importance = pd.DataFrame({
     'feature': X_train.columns,
-    'importance': gb_model.feature_importances_
+    'importance': Gb_model.feature_importances_
 }).sort_values('importance', ascending=False)
 
 print("\nTop 15 Features (Gradient Boosting):")
