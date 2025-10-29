@@ -34,6 +34,12 @@ match-prediction-system/training_log.txt
 match-prediction-system/training_output.log
 
 # Ignore the entire data folder
-!match-prediction-system/data/graphs/
-!match-prediction-system/data/graphs/*.png
 match-prediction-system/data/
+!match-prediction-system/data/README.md
+!match-prediction-system/data/graphs/
+!match-prediction-system/data/processed/DATA_SPLIT_README.md
+!match-prediction-system/data/processed/FEATURE_ENGINEERING_README.md
+!match-prediction-system/data/processed/TRAINING_RESULTS.md
+
+# Ignore old data archive
+match-prediction-system/old_data/

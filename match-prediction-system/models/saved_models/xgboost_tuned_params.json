@@ -1,11 +1,44 @@
 {
-  "subsample": 0.7,
-  "reg_lambda": 1.5,
-  "reg_alpha": 0.01,
-  "n_estimators": 700,
-  "min_child_weight": 5,
-  "max_depth": 3,
-  "learning_rate": 0.03,
-  "gamma": 0.2,
-  "colsample_bytree": 0.8
+  "best_params": {
+    "n_estimators": 1000,
+    "max_depth": 8,
+    "learning_rate": 0.01222212809760331,
+    "subsample": 0.8805643058360274,
+    "colsample_bytree": 0.5262844911710848,
+    "gamma": 2.940498750241816,
+    "min_child_weight": 1,
+    "reg_alpha": 0.4656777509583216,
+    "reg_lambda": 2.603584866083579,
+    "random_state": 42,
+    "n_jobs": -1,
+    "objective": "binary:logistic",
+    "eval_metric": "logloss"
+  },
+  "baseline_params": {
+    "n_estimators": 700,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "subsample": 0.7,
+    "colsample_bytree": 0.8,
+    "gamma": 0.2,
+    "min_child_weight": 5,
+    "reg_alpha": 0.01,
+    "reg_lambda": 1.5,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "test_metrics": {
+    "accuracy": 0.7654917002843727,
+    "auc": 0.866820228545085,
+    "log_loss": 0.4377728459499654
+  },
+  "baseline_metrics": {
+    "accuracy": 0.7625157066331592,
+    "auc": 0.8630156602885526
+  },
+  "improvement": {
+    "accuracy": 0.002975993651213593,
+    "auc": 0.0038045682565324146
+  },
+  "timestamp": "2025-10-29T03:24:42.629096"
 }

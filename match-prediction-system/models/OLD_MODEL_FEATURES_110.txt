@@ -1,0 +1,166 @@
+================================================================================
+COMPLETE LIST OF 110 FEATURES USED IN OLD MODEL
+================================================================================
+
+Total Features: 110
+Non-zero importance: 96
+Zero importance: 14
+
+================================================================================
+ELO FEATURES (18 features)
+================================================================================
+  combined_elo_diff                               0.226474
+  elo_diff                                        0.078428
+  surface_elo_ratio                               0.025115
+  surface_elo_diff                                0.020045
+  elo_ratio                                       0.014188
+  player2_h2h_elo_advantage                       0.005369
+  tournament_elo_ratio                            0.005343
+  combined_elo_p2                                 0.005192
+  player1_surface_elo_before                      0.004872
+  player1_elo_before                              0.004822
+  combined_elo_p1                                 0.004748
+  player2_elo_before                              0.004700
+  tournament_elo_diff                             0.004637
+  h2h_elo_advantage_diff                          0.004605
+  player1_h2h_elo_advantage                       0.004596
+  player2_surface_elo_before                      0.004572
+  player2_tournament_elo_before                   0.004299
+  player1_tournament_elo_before                   0.004033
+
+================================================================================
+SURFACE FEATURES (13 features)
+================================================================================
+  surface_win_probability                         0.012101
+  surface_Grass                                   0.005047
+  player1_surface_specialist                      0.004787
+  surface_Clay                                    0.004676
+  surface_advantage_diff                          0.004227
+  player2_surface_advantage_pct                   0.004223
+  surface_advantage_pct_diff                      0.004215
+  player1_surface_advantage                       0.004095
+  player2_surface_advantage                       0.003987
+  player1_surface_advantage_pct                   0.003873
+  surface_Carpet                                  0.003270
+  surface_Hard                                    0.002740
+  player2_surface_specialist                      0.000000
+
+================================================================================
+TOURNAMENT FEATURES (14 features)
+================================================================================
+  tournament_grand_slam                           0.010396
+  player1_matches_in_tournament                   0.009823
+  player1_tournament_rounds                       0.009027
+  player2_tournament_rounds                       0.008888
+  player2_matches_in_tournament                   0.008542
+  tournament_rounds_diff                          0.005398
+  player1_tournament_momentum                     0.005148
+  player2_tournament_momentum                     0.004987
+  tournament_experience_diff                      0.004796
+  tournament_momentum_diff                        0.004762
+  tournament_win_probability                      0.004644
+  tournament_atp250                               0.004640
+  tournament_masters                              0.004171
+  tournament_atp500                               0.004145
+
+================================================================================
+HEAD-TO-HEAD FEATURES (8 features)
+================================================================================
+  player1_h2h_win_rate                            0.005717
+  player2_h2h_win_rate                            0.005277
+  player1_h2h_wins                                0.004048
+  player1_h2h_matches                             0.003628
+  player2_h2h_wins                                0.003307
+  player2_h2h_matches                             0.003203
+  h2h_win_rate_diff                               0.001887
+  h2h_experience                                  0.000000
+
+================================================================================
+FORM & MOMENTUM FEATURES (9 features)
+================================================================================
+  momentum_diff                                   0.029293
+  form_win_diff                                   0.007905
+  player1_form_wins                               0.004597
+  player1_momentum                                0.004454
+  player2_momentum                                0.004149
+  recent_form_diff                                0.004049
+  player2_recent_form                             0.003822
+  player1_recent_form                             0.003805
+  player2_form_wins                               0.003561
+
+================================================================================
+REST & FATIGUE FEATURES (12 features)
+================================================================================
+  player1_rest_quality                            0.020071
+  player1_days_since_last                         0.018360
+  rest_quality_diff                               0.017747
+  rest_advantage                                  0.014564
+  player2_days_since_last                         0.011832
+  player2_rest_quality                            0.010174
+  fatigue_impact_diff                             0.007732
+  player1_fatigue_impact                          0.005226
+  player2_fatigue_impact                          0.005042
+  both_rested                                     0.003494
+  player1_fatigued                                0.002915
+  player2_fatigued                                0.000000
+
+================================================================================
+RECENT MATCH HISTORY (20 features)
+================================================================================
+  player2_match_1                                 0.031251
+  player1_match_1                                 0.018801
+  player2_match_3                                 0.004889
+  player2_match_2                                 0.004436
+  player1_match_7                                 0.004172
+  player1_match_9                                 0.003985
+  player2_match_7                                 0.003790
+  player2_match_4                                 0.003765
+  player1_match_2                                 0.003732
+  player2_match_10                                0.003714
+  player2_match_9                                 0.003697
+  player2_match_6                                 0.003658
+  player1_match_3                                 0.003569
+  player1_match_5                                 0.003521
+  player1_match_10                                0.003476
+  player1_match_4                                 0.003439
+  player2_match_5                                 0.003230
+  player2_match_8                                 0.003229
+  player1_match_8                                 0.002684
+  player1_match_6                                 0.002643
+
+================================================================================
+PLAYER CHARACTERISTICS (13 features)
+================================================================================
+  player1_age                                     0.004824
+  player2_age                                     0.004746
+  player2_height                                  0.000000
+  player1_height                                  0.000000
+  lefty_vs_righty                                 0.000000
+  player2_lefty                                   0.000000
+  player1_lefty                                   0.000000
+  same_hand                                       0.000000
+  player2_hand_encoded                            0.000000
+  player1_hand_encoded                            0.000000
+  height_diff                                     0.000000
+  age_diff                                        0.000000
+  player1_taller                                  0.000000
+
+================================================================================
+DERIVED/COMBINED FEATURES (3 features)
+================================================================================
+  win_probability                                 0.069803
+  player1_deep_run                                0.018324
+  player2_deep_run                                0.004116
+
+================================================================================
+FEATURE CATEGORY SUMMARY
+================================================================================
+ELO Features                       :  18 features (total importance: 0.4260)
+Surface Features                   :  13 features (total importance: 0.0572)
+Tournament Features                :  14 features (total importance: 0.0894)
+Head-to-Head Features              :   8 features (total importance: 0.0271)
+Form & Momentum Features           :   9 features (total importance: 0.0656)
+Rest & Fatigue Features            :  12 features (total importance: 0.1172)
+Recent Match History               :  20 features (total importance: 0.1157)
+Player Characteristics             :  13 features (total importance: 0.0096)
+Derived/Combined Features          :   3 features (total importance: 0.0922)

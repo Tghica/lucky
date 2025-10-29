@@ -13,7 +13,7 @@ from datetime import datetime
 
 def load_model():
     """Load the trained model"""
-    model_path = Path('models/saved_models/xgboost_tuned_model.pkl')
+    model_path = Path('models/saved_models/xgboost_model.pkl')
     if not model_path.exists():
         print("❌ Model not found. Please train the model first using train_quick.py")
         sys.exit(1)

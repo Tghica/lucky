@@ -1,0 +1,10 @@
+{
+  "train_accuracy": 0.8161166589511276,
+  "test_accuracy": 0.7654255670921235,
+  "train_auc": 0.9108502752265791,
+  "test_auc": 0.8646531261025896,
+  "training_time": 1.483967,
+  "train_samples": 60484,
+  "test_samples": 15121,
+  "timestamp": "2025-10-29T03:12:35.277853"
+}
